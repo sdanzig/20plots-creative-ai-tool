@@ -1,0 +1,34 @@
+.plot-form-card {
+  margin-top: 30px;
+}
+
+.plot-form-card h5 {
+  font-family: 'Calligraffitti', cursive;
+}
+
+.element-chip {
+  margin-right: 10px;
+}
+
+.lower-form-buttons {
+  justify-content: flex-end;
+  align-items: center;
+  display: flex;
+}
+
+.MuiDrawer-paper {
+  background-color: #f0f0f0; /* Add your preferred color */
+}
+
+.MuiTypography-root {
+  color: #333; /* Add your preferred color */
+}
+
+.MuiButton-root {
+  background-color: #3f51b5; /* Add your preferred color */
+  color: white;
+}
+
+.MuiButton-root:hover {
+  background-color: #283593; /* Add your preferred color for hover state */
+}

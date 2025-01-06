@@ -1,0 +1,5 @@
+.loading-backdrop {
+    z-index: 9999 !important; /* Ensure this is always on top */
+    color: #fff;
+  }
+  

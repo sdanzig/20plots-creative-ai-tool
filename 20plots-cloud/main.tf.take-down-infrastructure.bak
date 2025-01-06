@@ -1,0 +1,103 @@
+########################################
+#  Application Variables
+########################################
+variable "TWENTYPLOTS_POSTGRES_URL" {
+  description = "The PostgreSQL JDBC URL"
+}
+
+variable "TWENTYPLOTS_POSTGRES_USERNAME" {
+  description = "The PostgreSQL username"
+}
+
+variable "TWENTYPLOTS_POSTGRES_PASSWORD" {
+  description = "The PostgreSQL password"
+}
+
+variable "TWENTYPLOTS_JWT_SECRET" {
+  description = "The JWT Secret"
+}
+
+variable "TWENTYPLOTS_FRONTEND_URL" {
+  description = "The Frontend URL"
+}
+
+variable "TWENTYPLOTS_OPENROUTER_APIKEY" {
+  description = "The OpenRouter API Key"
+}
+
+variable "TWENTYPLOTS_OPENAI_APIKEY" {
+  description = "The OpenAI API Key"
+}
+
+variable "TWENTYPLOTS_OPENAI_MODEL" {
+  description = "The OpenAI Model"
+}
+
+########################################
+#  AWS Provider & Region
+########################################
+variable "aws_region" {
+  type        = string
+  default     = "us-east-2"
+  description = "AWS region for resource deployment"
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+########################################
+#  Docker Image URIs
+########################################
+variable "server_docker_image_uri" {
+  type        = string
+  description = <<EOT
+Full Docker image URI for the server 
+(e.g., 123456789012.dkr.ecr.us-east-2.amazonaws.com/twentyplots-server:latest)
+EOT
+}
+
+variable "ui_docker_image_uri" {
+  type        = string
+  description = <<EOT
+Full Docker image URI for the UI
+(e.g., 123456789012.dkr.ecr.us-east-2.amazonaws.com/twentyplots-ui:latest)
+EOT
+}
+
+########################################
+#  GitHub SHA & Deployment Logic
+########################################
+variable "current_github_sha" {
+  type        = string
+  default     = "0"
+  description = "Current GitHub SHA used for tagging images"
+}
+
+locals {
+  current_github_sha = var.current_github_sha
+  deploy_server      = (
+    var.server_docker_image_uri != "" 
+    && endswith(var.server_docker_image_uri, local.current_github_sha)
+  ) ? true : false
+  
+  deploy_ui          = (
+    var.ui_docker_image_uri != "" 
+    && endswith(var.ui_docker_image_uri, local.current_github_sha)
+  ) ? true : false
+}
+
+########################################
+#  Container Ports
+########################################
+variable "server_container_port" {
+  type        = number
+  default     = 8080
+  description = "Port used by the server container"
+}
+
+variable "ui_container_port" {
+  type        = number
+  default     = 80
+  description = "Port used by the UI container"
+}

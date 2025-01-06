@@ -1,0 +1,132 @@
+name: 20plots CI
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VERSION: '1.5.7'
+
+jobs:
+  build_server:
+    runs-on: ubuntu-latest
+    outputs:
+        image: ${{ steps.build-push.outputs.image }}
+    steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up JDK 17
+          uses: actions/setup-java@v3
+          with:
+            java-version: '17'
+            distribution: 'adopt'
+    
+        - name: Build with Gradle
+          run: ./gradlew build --stacktrace
+          working-directory: ./20plots-server
+    
+        - name: Login to Amazon ECR
+          id: login-ecr
+          uses: aws-actions/amazon-ecr-login@v1
+        
+        - name: Build, tag, and push image to Amazon ECR
+          id: build-push
+          env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: twentyplots-server
+            IMAGE_TAG: ${{ github.sha }}
+          run: |
+            # Build a docker container and
+            # push it to ECR so that it can
+            # be deployed to ECS.
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          working-directory: ./20plots-server
+
+  build_ui:
+    runs-on: ubuntu-latest
+    outputs:
+        image: ${{ steps.build-push.outputs.image }}
+    steps:
+        - uses: actions/checkout@v4
+    
+        - name: Setup Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: '20.4.0'
+      
+        - name: Install Dependencies
+          run: npm install
+          working-directory: ./20plots-ui
+    
+        - name: Run Tests
+          run: npm test
+          working-directory: ./20plots-ui
+    
+        - name: Build
+          run: npm run build
+          working-directory: ./20plots-ui
+    
+        - name: Login to Amazon ECR
+          id: login-ecr
+          uses: aws-actions/amazon-ecr-login@v1
+    
+        - name: Build, tag, and push image to Amazon ECR
+          id: build-push
+          env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: twentyplots-ui
+            IMAGE_TAG: ${{ github.sha }}
+          run: |
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          working-directory: ./20plots-ui
+          
+  terraform:
+    needs: [build_server, build_ui]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+              
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./20plots-cloud
+      
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./20plots-cloud
+
+      - name: Terraform Plan
+        run: |
+          TF_LOG=DEBUG terraform plan \
+          -var "TWENTYPLOTS_POSTGRES_URL=${{ secrets.TWENTYPLOTS_POSTGRES_URL }}" \
+          -var "TWENTYPLOTS_POSTGRES_USERNAME=${{ secrets.TWENTYPLOTS_POSTGRES_USERNAME }}" \
+          -var "TWENTYPLOTS_POSTGRES_PASSWORD=${{ secrets.TWENTYPLOTS_POSTGRES_PASSWORD }}" \
+          -var "TWENTYPLOTS_JWT_SECRET=${{ secrets.TWENTYPLOTS_JWT_SECRET }}" \
+          -var "TWENTYPLOTS_FRONTEND_URL=${{ secrets.TWENTYPLOTS_FRONTEND_URL }}" \
+          -var "TWENTYPLOTS_OPENROUTER_APIKEY=${{ secrets.TWENTYPLOTS_OPENROUTER_APIKEY }}" \
+          -var "TWENTYPLOTS_OPENAI_APIKEY=${{ secrets.TWENTYPLOTS_OPENAI_APIKEY }}" \
+          -var "TWENTYPLOTS_OPENAI_MODEL=${{ secrets.TWENTYPLOTS_OPENAI_MODEL }}" \
+          -var "server_docker_image_uri=${{ needs.build_server.outputs.image }}" \
+          -var "ui_docker_image_uri=${{ needs.build_ui.outputs.image }}" \
+          -var "current_github_sha=${{ github.sha }}" \
+          -out=tfplan 2>&1 | tee debug.log
+        working-directory: ./20plots-cloud
+        timeout-minutes: 10
+    
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./20plots-cloud 
+    

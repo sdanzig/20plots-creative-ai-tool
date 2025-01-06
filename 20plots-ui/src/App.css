@@ -1,0 +1,106 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.activeRoute {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+  padding: 0 15px;
+}
+
+.activeLink {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.link.plotsButton {
+  margin-right: 60px;
+}
+
+.metallic-text {
+  background: -webkit-linear-gradient(white, gray);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 2px 2px rgba(255,255,255,0.5);
+}
+
+html {
+  overflow-y: scroll;
+}
+
+.logoutButton {
+  text-transform: lowercase;
+  margin-left: 50px;
+}
+
+body {
+  background-color: lightgray;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #f2f2f2;
+  color: black;
+  text-align: center;
+  padding: 0px;
+  font-size: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0rem 1rem;
+}
+
+.footer__left, .footer__right {
+  width: 50%;
+}
+
+.footer__left {
+  text-align: left;
+}
+
+.footer__right {
+  text-align: right;
+  margin-right: 30px;
+}

@@ -1,0 +1,30 @@
+/* AnecdoteList.css */
+
+.anecdote-card {
+    height: 110px;
+    padding: 10px 0px 0px 0px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    user-select: none;
+}
+
+.anecdote-card.active {
+    background-color: lightblue;
+}
+
+.anecdote-card-content {
+    margin: 0px;
+    flex-grow: 1;
+}
+
+.anecdote-card-header {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    display: flex;
+    justify-content: space-between;
+    height: 40px;
+}

@@ -1,0 +1,29 @@
+.plot-card {
+    height: 110px;
+    padding: 10px 0px 0px 0px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    user-select: none;
+}
+
+.plot-card.active {
+    background-color: lightblue;
+}
+
+.plot-card-content {
+    margin: 0px;
+    flex-grow: 1;
+}
+
+.plot-card-header {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(245, 245, 245, 0.7);
+    height: 40px;
+}

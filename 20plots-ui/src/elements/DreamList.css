@@ -1,0 +1,30 @@
+/* DreamList.css */
+
+.dream-card {
+    height: 110px;
+    padding: 10px 0px 0px 0px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    user-select: none;
+}
+
+.dream-card.active {
+    background-color: lightblue;
+}
+
+.dream-card-content {
+    margin: 0px;
+    flex-grow: 1;
+}
+
+.dream-card-header {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    display: flex;
+    justify-content: space-between;
+    height: 40px;
+}
